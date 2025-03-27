@@ -1,5 +1,4 @@
 [build]
-  base = "Budget app"
   command = "npm ci && npm run build"
   publish = "dist"
 
