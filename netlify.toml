@@ -1,9 +1,8 @@
 [build]
-  command = "npm run build"
+  command = "npm install && npm i @rollup/rollup-linux-x64-gnu && npm run build"
   publish = "dist"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
