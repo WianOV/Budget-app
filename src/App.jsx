@@ -1,14 +1,17 @@
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom'
 import styled from 'styled-components'
 import GlobalStyles from './styles/GlobalStyles'
 import Dashboard from './screens/Dashboard'
 import Budget from './screens/Budget'
 import Settings from './screens/Settings'
 import Stats from './screens/Stats'
+import Login from './screens/Login'
 import BudgetIcon from './icons/BudgetIcon'
 import HomeIcon from './icons/HomeIcon'
 import SettingsIcon from './icons/SettingsIcon'
 import StatsIcon from './icons/StatsIcon'
+import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 
 const AppContainer = styled.div`
   display: flex;
@@ -20,8 +23,8 @@ const AppContainer = styled.div`
 const MainContent = styled.main`
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 56px; /* Height of the navigation bar */
-  height: calc(100vh - 56px);
+  padding-bottom: ${56}px; /* Height of the navigation bar */
+  height: calc(100vh - ${56}px);
 `
 
 const NavBar = styled.nav`
@@ -29,7 +32,7 @@ const NavBar = styled.nav`
   bottom: 0;
   left: 0;
   right: 0;
-  height: 56px;
+  height: ${56}px;
   background: white;
   display: flex;
   justify-content: space-around;
@@ -52,10 +55,11 @@ const NavBar = styled.nav`
       width: 24px;
       height: 24px;
       margin-bottom: 4px;
+      fill: currentColor;
     }
 
     &.active {
-      color: #2ecc71;
+      color: #3498db;
     }
   }
 `
@@ -63,36 +67,72 @@ const NavBar = styled.nav`
 function App() {
   return (
     <Router>
-      <GlobalStyles />
-      <AppContainer>
-        <MainContent>
+      <AuthProvider>
+        <AppContainer>
+          <GlobalStyles />
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/budget" element={<Budget />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            
+            {/* Protected Routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <MainContent>
+                  <Dashboard />
+                </MainContent>
+                <NavBar>
+                  <NavLink to="/dashboard"><HomeIcon />Home</NavLink>
+                  <NavLink to="/budget"><BudgetIcon />Budget</NavLink>
+                  <NavLink to="/stats"><StatsIcon />Stats</NavLink>
+                  <NavLink to="/settings"><SettingsIcon />Settings</NavLink>
+                </NavBar>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/budget" element={
+              <ProtectedRoute>
+                <MainContent>
+                  <Budget />
+                </MainContent>
+                <NavBar>
+                  <NavLink to="/dashboard"><HomeIcon />Home</NavLink>
+                  <NavLink to="/budget"><BudgetIcon />Budget</NavLink>
+                  <NavLink to="/stats"><StatsIcon />Stats</NavLink>
+                  <NavLink to="/settings"><SettingsIcon />Settings</NavLink>
+                </NavBar>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/stats" element={
+              <ProtectedRoute>
+                <MainContent>
+                  <Stats />
+                </MainContent>
+                <NavBar>
+                  <NavLink to="/dashboard"><HomeIcon />Home</NavLink>
+                  <NavLink to="/budget"><BudgetIcon />Budget</NavLink>
+                  <NavLink to="/stats"><StatsIcon />Stats</NavLink>
+                  <NavLink to="/settings"><SettingsIcon />Settings</NavLink>
+                </NavBar>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <MainContent>
+                  <Settings />
+                </MainContent>
+                <NavBar>
+                  <NavLink to="/dashboard"><HomeIcon />Home</NavLink>
+                  <NavLink to="/budget"><BudgetIcon />Budget</NavLink>
+                  <NavLink to="/stats"><StatsIcon />Stats</NavLink>
+                  <NavLink to="/settings"><SettingsIcon />Settings</NavLink>
+                </NavBar>
+              </ProtectedRoute>
+            } />
           </Routes>
-        </MainContent>
-        
-        <NavBar>
-          <NavLink to="/" className={({ isActive }) => isActive ? 'active' : ''}>
-            <HomeIcon />
-            <span>Home</span>
-          </NavLink>
-          <NavLink to="/budget" className={({ isActive }) => isActive ? 'active' : ''}>
-            <BudgetIcon />
-            <span>Budget</span>
-          </NavLink>
-          <NavLink to="/stats" className={({ isActive }) => isActive ? 'active' : ''}>
-            <StatsIcon />
-            <span>Stats</span>
-          </NavLink>
-          <NavLink to="/settings" className={({ isActive }) => isActive ? 'active' : ''}>
-            <SettingsIcon />
-            <span>Settings</span>
-          </NavLink>
-        </NavBar>
-      </AppContainer>
+        </AppContainer>
+      </AuthProvider>
     </Router>
   )
 }
