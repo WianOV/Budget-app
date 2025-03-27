@@ -1,9 +1,27 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  base = "/"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
+  VITE_APP_ENV = "production"
+  # Add your build-time environment variables here
+  # Example:
+  # VITE_API_URL = "https://api.example.com"
+
+[context.production.environment]
+  # Production-specific environment variables
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  # Environment variables for deploy previews
+  NODE_ENV = "preview"
+
+[context.branch-deploy.environment]
+  # Environment variables for branch deploys
+  NODE_ENV = "staging"
 
 [[redirects]]
   from = "/*"
