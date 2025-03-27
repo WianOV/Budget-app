@@ -7,6 +7,8 @@
 [build.environment]
   NODE_VERSION = "18"
   VITE_APP_ENV = "production"
+  RUBY_VERSION = "false"
+  PYTHON_VERSION = "false"
   # Add your build-time environment variables here
   # Example:
   # VITE_API_URL = "https://api.example.com"
