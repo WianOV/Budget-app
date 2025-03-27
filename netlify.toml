@@ -6,24 +6,16 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  VITE_APP_ENV = "production"
-  RUBY_VERSION = "false"
-  PYTHON_VERSION = "false"
-  # Add your build-time environment variables here
-  # Example:
-  # VITE_API_URL = "https://api.example.com"
+  RUBY_ENABLED = "false"
+  PYTHON_ENABLED = "false"
+  USE_RUBY_VERSION = "false"
+  USE_PYTHON_VERSION = "false"
+
+[context.production]
+  command = "npm install && npm run build"
 
 [context.production.environment]
-  # Production-specific environment variables
   NODE_ENV = "production"
-
-[context.deploy-preview.environment]
-  # Environment variables for deploy previews
-  NODE_ENV = "preview"
-
-[context.branch-deploy.environment]
-  # Environment variables for branch deploys
-  NODE_ENV = "staging"
 
 [[redirects]]
   from = "/*"
