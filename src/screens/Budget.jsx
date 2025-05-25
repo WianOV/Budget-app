@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { db } from '../firebase'
-import { collection, addDoc, getDocs, query, where, onSnapshot, deleteDoc, doc, setDoc } from 'firebase/firestore'
+import { collection, addDoc, getDocs, query, where, onSnapshot, deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore'
 import Modal from '../components/Modal'
 import CustomSelect from '../components/CustomSelect'
 
@@ -129,18 +129,19 @@ const ListItem = styled.div`
   }
 `
 
-const DeleteButton = styled.button`
+const ActionButton = styled.button`
   padding: 0.5rem 0.75rem;
-  background: #ff4444;
+  background: ${props => props.variant === 'edit' ? '#3498db' : '#ff4444'};
   color: white;
   border: none;
   border-radius: 6px;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
+  margin-left: ${props => props.variant === 'edit' ? '0' : '0.5rem'};
 
   &:hover {
-    background: #cc0000;
+    background: ${props => props.variant === 'edit' ? '#2980b9' : '#cc0000'};
   }
 
   &:active {
@@ -165,6 +166,8 @@ function Budget() {
   const [newCategory, setNewCategory] = useState({ name: '', type: 'expense' })
   const [error, setError] = useState(null)
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, item: null, type: null })
+  const [editModal, setEditModal] = useState({ isOpen: false, item: null })
+  const [editDebit, setEditDebit] = useState({ name: '', amount: '', dueDate: 1 })
 
   useEffect(() => {
     const unsubBudget = onSnapshot(
@@ -250,6 +253,30 @@ function Budget() {
 
   const handleDelete = (item, type) => {
     setDeleteModal({ isOpen: true, item, type })
+  }
+
+  const handleEdit = (debit) => {
+    setEditDebit({
+      id: debit.id,
+      name: debit.name,
+      amount: debit.amount,
+      dueDate: debit.dueDate
+    })
+    setEditModal({ isOpen: true, item: debit })
+  }
+
+  const confirmEdit = async () => {
+    try {
+      await updateDoc(doc(db, 'debitOrders', editDebit.id), {
+        name: editDebit.name,
+        amount: Number(editDebit.amount),
+        dueDate: Number(editDebit.dueDate)
+      })
+      setEditModal({ isOpen: false, item: null })
+      setError(null)
+    } catch (error) {
+      setError('Failed to update debit order: ' + error.message)
+    }
   }
 
   const confirmDelete = async () => {
@@ -339,11 +366,16 @@ function Budget() {
                   <h3>{debit.name}</h3>
                   <p>Due: Day {debit.dueDate}</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Amount>R{Number(debit.amount).toFixed(2)}</Amount>
-                  <DeleteButton onClick={() => handleDelete(debit, 'debit')}>
-                    Delete
-                  </DeleteButton>
+                  <div style={{ display: 'flex' }}>
+                    <ActionButton variant="edit" onClick={() => handleEdit(debit)}>
+                      Edit
+                    </ActionButton>
+                    <ActionButton onClick={() => handleDelete(debit, 'debit')}>
+                      Delete
+                    </ActionButton>
+                  </div>
                 </div>
               </ListItem>
             ))}
@@ -380,9 +412,9 @@ function Budget() {
                   <h3>{category.name}</h3>
                   <p>Type: {category.type}</p>
                 </div>
-                <DeleteButton onClick={() => handleDelete(category, 'category')}>
+                <ActionButton onClick={() => handleDelete(category, 'category')}>
                   Delete
-                </DeleteButton>
+                </ActionButton>
               </ListItem>
             ))}
           </List>
@@ -400,6 +432,43 @@ function Budget() {
         Are you sure you want to delete {deleteModal.item?.name}? 
         {deleteModal.type === 'category' && ' All transactions with this category will be affected.'}
         This action cannot be undone.
+      </Modal>
+
+      <Modal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, item: null })}
+        title="Edit Debit Order"
+        onConfirm={confirmEdit}
+        confirmText="Save"
+        variant="primary"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+          <Input
+            type="text"
+            placeholder="Name"
+            value={editDebit.name}
+            onChange={(e) => setEditDebit({...editDebit, name: e.target.value})}
+            required
+          />
+          <Input
+            type="number"
+            placeholder="Amount"
+            step="0.01"
+            value={editDebit.amount}
+            onChange={(e) => setEditDebit({...editDebit, amount: e.target.value})}
+            required
+          />
+          <CustomSelect
+            value={editDebit.dueDate}
+            onChange={(value) => setEditDebit({...editDebit, dueDate: Number(value)})}
+            options={Array.from({ length: 31 }, (_, i) => ({
+              value: i + 1,
+              label: `Day ${i + 1}`
+            }))}
+            placeholder="Select due date"
+            label="Select due date"
+          />
+        </div>
       </Modal>
     </BudgetContainer>
   )
